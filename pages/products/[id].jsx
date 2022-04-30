@@ -1,38 +1,63 @@
-import { useRouter } from "next/router";
-import React from "react";
+import React from 'react'
+//import {useRouter} from 'next/router'
+import {database} from '../../config/firebase'
+import {collection,doc,getDocs,getDoc} from 'firebase/firestore'
 
-// export function getServerSideProps(context) {
-//   const { id } = context.params;
+// export function getServerSideProps(context){
 
-//   return {
-//     props: {
-//       id,
-//     },
-//   };
+//     console.log(context)
+//     const {id} = context.params
+
+//     return {
+//         props:{
+//             id
+//         }
+//     }
 // }
 
-export async function getStaticPaths() {
-  const productosRequest = await fetch("http://localhost:3000/api/products");
-  const productos = await productosRequest.json();
+export async function getStaticPaths(){
+    const col = collection(database,"productos")
+    const docs = await getDocs(col)
 
-  const paths = productos.map((producto) => ({ params: { id: producto.id } }));
+    const productos = []
 
-  return { paths, fallback: true };
+    docs.forEach(doc=>{
+        productos.push({...doc.data(),id:doc.id})
+    })
+
+    const paths = productos.map(producto=>({
+        params:{
+            id:producto.id
+        }
+    }))
+
+    console.log(paths)
+
+    return {
+        paths,
+        fallback:false // Si visitamos una ruta que no existe, devolvemos un 404
+    }
 }
 
-export async function getStaticProps({ params }) {
-  return {
-    props: {
-      producto: {
-        id: params.id,
-        name: "Producto de ejemplo",
-      },
-    },
-  };
+export async function getStaticProps({params}){
+    const document = doc(database,"productos",params.id)
+    const productDocument = await getDoc(document)
+
+    const producto = productDocument.data()
+
+    return {
+        props:{
+            producto
+        }
+    }
 }
 
-export default function Product({ producto}) {
-  // const router = useRouter();
-  // const id = router.query.id;
-  return <div>{producto?.id}</div>;
+export default function Producto(props) {
+    // const router = useRouter()
+    // const id = router.query.id
+    //if(producto === undefined) {return}
+    console.log(props)
+    return (
+        <div>{props.producto.name}</div>
+    )
 }

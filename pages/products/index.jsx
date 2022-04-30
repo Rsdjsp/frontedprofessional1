@@ -1,53 +1,60 @@
-import React, { useEffect, useState } from "react";
+import React,{useEffect,useState} from 'react'
+import Link from 'next/link'
 
-/*Si utlizamos esta función, estaremos usando SSR*/
-// export async function getServerSideProps() {
-//   const productosRequest = await fetch("http://localhost:3000/api/products");
-//   const productos = await productosRequest.json();
+// Si utlizamos esta función, estaremos usando SSR
+// export async function getServerSideProps(){
+//   const productosRequest = await fetch('http://localhost:3000/api/products')
 
-//   return {
-//     props: {
-//       productos,
-//     },
-//   };
+//   const productos = await productosRequest.json()
+
+//   return{
+//     props:{
+//       productos
+//     }
+//   }
 // }
 
+//Utilizamos esta función si queremos SSG (Static Site Generation)
+export async function getStaticProps(){
 
-/*Si utlizamos esta función, estaremos usando SSG*/
-export async function getStaticProps() {
-  const productosRequest = await fetch("http://localhost:3000/api/products");
-  const productos = await productosRequest.json();
+  //Reto de mañana: Implementar la consulta a Firebase Aquí
+  const productosRequest = await fetch('http://localhost:3000/api/products')
 
-  return {
-    props: {
-      productos,
-    },
-  };
+  const productos = await productosRequest.json()
+
+  return{
+    props:{
+      productos
+    }
+  }
 }
 
-export default function Products({ productos }) {
+export default function Productos({productos}) {
+
   // const [productos, setProductos] = useState([])
 
-  // // Client-side rendering
+  //Client-side rendering
   // useEffect(() => {
-
+    
   //   fetch('http://localhost:3000/api/products')
   //   .then(response=>response.json())
   //   .then(data=>{
   //     setProductos(data)
   //   })
   // }, [])
+  
 
   return (
     <div>
-      {productos.map((producto) => {
-        return (
-          <article key={producto.id}>
+      {console.log("Productos",productos)}
+      {productos.map(producto=>{
+        return <article key={producto.id}>
+          <Link href={"/productos/"+producto.id}>
             <h2>{producto.name}</h2>
-            <p>{producto.description}</p>
-          </article>
-        );
+          </Link>
+          <p>{producto.description}</p>
+        </article>
       })}
     </div>
-  );
+  )
 }
