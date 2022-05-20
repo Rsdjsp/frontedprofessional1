@@ -1,14 +1,34 @@
-import Head from "next/head";
-import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import Link from "next/link";
+import React from "react";
+import Carousel from "../components/Carousel";
+import Footer from "../components/Footer";
+import Home from "../components/Home";
+import { database } from "../config/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
-export default function Home() {
-  return (
-    <main>
-      <div>
-        <Link href="/products">Ir a Productos</Link>
-      </div>
-    </main>
-  );
+export async function getServerSideProps() {
+  const col = collection(database, "products");
+  const docs = await getDocs(col);
+  const products = [];
+  docs.forEach((doc) => {
+    products.push({ ...doc.data(), id: doc.id });
+  });
+  const caroProducts = products.slice(0, 20);
+
+  return {
+    props: {
+      caroProducts,
+    },
+  };
 }
+
+const Principal = ({ caroProducts }) => {
+  return (
+    <>
+      <Home />
+      <Carousel products={caroProducts} />
+      <Footer />
+    </>
+  );
+};
+
+export default Principal;
