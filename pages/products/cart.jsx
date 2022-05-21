@@ -5,6 +5,7 @@ import { IoTrashOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { recoverCart, removeFromCart } from "../../features/products/cart";
 import { useRouter } from "next/router";
+import Link from "next/Link";
 
 const CartContainer = styled.div`
   width: 100%;
@@ -146,7 +147,7 @@ const Cart = () => {
   useEffect(() => {
     if (logged) {
       dispatch(recoverCart());
-    } 
+    }
   }, [dispatch, logged, router]);
 
   let total = 0;
@@ -162,14 +163,10 @@ const Cart = () => {
     dispatch(removeFromCart(idProduct));
   };
 
-  const checkOut = () => {
-    navigate(`/payments/${total}`);
-  };
-
   return (
     <CartContainer>
       <h1>Shopping Cart</h1>
-      
+
       <div>
         {products &&
           products.map(({ id, quantity, img, name, price }) => {
@@ -209,7 +206,9 @@ const Cart = () => {
             </h3>
             <p>Shiping & taxes calculated at checkout</p>
           </div>
-          <button onClick={checkOut}>check out</button>
+          <Link href={`/products/payment/${total}`}>
+            <button>check out</button>
+          </Link>
         </article>
       </section>
     </CartContainer>

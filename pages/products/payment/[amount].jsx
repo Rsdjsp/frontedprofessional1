@@ -1,9 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from "react";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { credentials } from "../config";
-import { post } from "../api";
-import FormPay from "../components/FormPay";
+import { credentials } from "../../../config/index";
+import { post } from "../../../config/axios";
+import FormPay from "../../../components/FormPay";
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -69,10 +70,19 @@ const CheckoutForm = styled.div`
   }
 `;
 
-export default function Payment() {
-  const { products } = useSelector((state) => state.user.cart);
+export function getServerSideProps(context) {
+  const { amount } = context.params;
+
+  return {
+    props: {
+      amount,
+    },
+  };
+}
+
+export default function Payment({ amount }) {
+  const { products } = useSelector((state) => state.cart);
   const [clientSecret, setClientSecret] = useState("");
-  const { amount } = useParams();
   const checkout = Math.round(amount) * 10;
   useEffect(() => {
     post("/api/payments/intent", {
@@ -90,11 +100,11 @@ export default function Payment() {
             </h3>
 
             {products &&
-              products.map(({ product, quantity }) => {
+              products.map(({ id, quantity, img, name }) => {
                 return (
-                  <article key={product._id}>
-                    <img src={product.img} alt="product" />
-                    <h2>{product.name}</h2>
+                  <article key={id}>
+                    <img src={img} alt="product" />
+                    <h2>{name}</h2>
                     <p>
                       X <span>{quantity}</span>
                     </p>
