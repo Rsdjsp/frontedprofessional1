@@ -10,10 +10,9 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { useDispatch } from "react-redux";
-import { updateData } from "../../features/auth/index";
+import { login, updateData } from "../../features/auth/index";
 import Modal from "../../components/Modal";
 import styled from "styled-components";
-import { FcGoogle } from "react-icons/fc";
 
 const config = {
   // Popup signin flow rather than redirect flow.
@@ -104,36 +103,6 @@ const LoginForm = styled.div`
       font-size: 13px;
       font-weight: 500;
     }
-
-    & > #google {
-      height: 50px;
-      border: 1.5px solid #a6a6a6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #ffffff;
-      font-size: 14px;
-      font-weight: 600;
-      color: #363636ba;
-      cursor: pointer;
-
-      :hover {
-        opacity: 70%;
-      }
-
-      & > span {
-        margin: auto 5px auto 0px;
-        font-size: 40px;
-        display: flex;
-        text-align: center;
-        align-items: center;
-        justify-content: center;
-        height: 45px;
-        width: 45px;
-        background-color: #ffffff;
-        border-radius: 5%;
-      }
-    }
   }
   & > #account {
     background-color: transparent;
@@ -149,13 +118,19 @@ const LoginForm = styled.div`
   }
 `;
 
+const Google = styled(StyledFirebaseAuth)`
+  cursor: pointer;
+  :hover {
+    opacity: 70%;
+  }
+`;
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const dispatch = useDispatch();
   const router = useRouter();
   const [modal, setModal] = useState(false);
 
-  const login = (event) => {
+  const sigIn = (event) => {
     event.preventDefault();
     setModal(true);
     const {
@@ -165,39 +140,49 @@ export default function Login() {
 
     if (isLogin) {
       signInWithEmailAndPassword(auth, email, password)
-        .then((result) => {
-          router.replace("/");
+        .then(({ user }) => {
+          dispatch(
+            login({
+              id: user.uid,
+              name: user.displayName,
+            })
+          );
         })
         .catch((error) => {
           console.log(error);
         });
     } else {
-      const name = event.target.name.value;
-      const profilePic = event.target.profilePic.value;
+      const {
+        firstname: { value: firstname },
+        lastname: { value: lastname },
+      } = event.target;
+      const name = `${firstname} ${lastname}`;
       createUserWithEmailAndPassword(auth, email, password)
         .then((result) => {
+          console.log(result);
           updateProfile(result.user, {
             displayName: name,
-            photoURL: profilePic,
           }).then(() => {
             dispatch(
               updateData({
                 name,
-                profilePic,
               })
             );
-            router.replace("/");
           });
         })
         .catch((error) => {
           console.log(error);
         });
     }
+    setTimeout(() => {
+      router.replace("/");
+      setModal(false);
+    }, 1500);
   };
   return (
     <div>
       <LoginForm>
-        <form onSubmit={login}>
+        <form onSubmit={sigIn}>
           <h1>{isLogin ? "Login" : "Create an Account"}</h1>
           {!isLogin && (
             <input
@@ -223,6 +208,7 @@ export default function Login() {
             placeholder="Password"
             name="password"
             id="password"
+            minLength={6}
             required
           />
           {isLogin && <p>FORGOT PASSWORD?</p>}
@@ -231,9 +217,7 @@ export default function Login() {
         {isLogin && (
           <div>
             <h4>Or login with:</h4>
-            <button id="google">
-              <StyledFirebaseAuth uiConfig={config} firebaseAuth={auth} />
-            </button>
+            <Google uiConfig={config} firebaseAuth={auth} />
           </div>
         )}
         <button onClick={() => setIsLogin(!isLogin)} id="account">

@@ -3,9 +3,8 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 import { IoTrashOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
-import { post } from "../api";
-import { pullProduct, userCart } from "../features/userSlice";
-import { useNavigate } from "react-router-dom";
+import { recoverCart, removeFromCart } from "../../features/products/cart";
+import { useRouter } from "next/router";
 
 const CartContainer = styled.div`
   width: 100%;
@@ -139,35 +138,28 @@ const CartContainer = styled.div`
 `;
 
 const Cart = () => {
-  const { products } = useSelector((state) => state.user.cart);
+  const { products } = useSelector((state) => state.cart);
   const { logged } = useSelector((state) => state.user);
-
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (logged) {
+      dispatch(recoverCart());
+    } 
+  }, [dispatch, logged, router]);
 
   let total = 0;
   products &&
     products.forEach((element) => {
-      if (element.product.price && element.quantity) {
-        const totalAmount = element.product.price * element.quantity;
+      if (element.price && element.quantity) {
+        const totalAmount = element.price * element.quantity;
         total = total + totalAmount;
       }
     });
 
-  useEffect(() => {
-  
-    dispatch(userCart());
-  }, [dispatch, logged, navigate]);
-
   const removeProduct = (idProduct) => {
-    post("/api/cart/delete", {
-      product: idProduct,
-    });
-    const productDel = products.find(
-      (product) => product.product._id === idProduct
-    );
-    const newCart = products.filter((product) => product !== productDel);
-    dispatch(pullProduct({ products: newCart }));
+    dispatch(removeFromCart(idProduct));
   };
 
   const checkOut = () => {
@@ -177,20 +169,21 @@ const Cart = () => {
   return (
     <CartContainer>
       <h1>Shopping Cart</h1>
+      
       <div>
         {products &&
-          products.map(({ product, quantity }) => {
+          products.map(({ id, quantity, img, name, price }) => {
             return (
-              <article key={product._id}>
-                <img src={product.img} alt="product" />
-                <h2>{product.name}</h2>
+              <article key={id}>
+                <img src={img} alt="product" />
+                <h2>{name}</h2>
                 <p>
                   X <span>{quantity}</span>
                 </p>
-                <button onClick={() => removeProduct(product._id)}>
+                <button onClick={() => removeProduct(id)}>
                   <IoTrashOutline />
                 </button>
-                <h3>$ {(product.price * quantity).toFixed(2)}</h3>
+                <h3>$ {(price * quantity).toFixed(2)}</h3>
               </article>
             );
           })}

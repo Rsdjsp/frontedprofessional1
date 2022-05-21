@@ -8,7 +8,7 @@ import {
   AiOutlineSearch,
 } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
-import { logOutUser } from "../features/auth/userSlice";
+import { logout } from "../features/auth";
 
 const Nav = styled.nav`
   background-color: #ffffff;
@@ -129,10 +129,11 @@ const LinkContainer = styled.div`
 export default function Navbar() {
   const dispatch = useDispatch();
   const { name, logged } = useSelector((state) => state.user);
+  const { products } = useSelector((state) => state.cart);
   const [modal, setModal] = useState(false);
 
   const signOut = () => {
-    dispatch(logOutUser());
+    dispatch(logout());
     setModal(false);
   };
 
@@ -175,6 +176,7 @@ export default function Navbar() {
           <Link href="/products/cart" passHref>
             <Links>
               <p>
+                {(products && logged) && <span>{products.length}</span>}
                 <AiOutlineShoppingCart />
                 Cart
               </p>

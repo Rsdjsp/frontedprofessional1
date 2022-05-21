@@ -3,10 +3,9 @@ import { database } from "../../config/firebase";
 import { collection, doc, getDocs, getDoc } from "firebase/firestore";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
-// import { post } from "../api";
 import Carousel from "../../components/Carousel";
 import Footer from "../../components/Footer";
-// import { pushProduct, userCart } from "../features/userSlice";
+import { addToCart } from "../../features/products/cart";
 
 const Cover = styled.div`
   width: 100%;
@@ -168,6 +167,7 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const document = doc(database, "products", params.id);
   const productDocument = await getDoc(document);
+  const unicId = productDocument.id;
   const unicProduct = productDocument.data();
   const col = collection(database, "products");
   const docs = await getDocs(col);
@@ -181,39 +181,31 @@ export async function getStaticProps({ params }) {
     props: {
       unicProduct,
       caroProducts,
+      unicId,
     },
     revalidate: 10,
   };
 }
 
-export default function Product({ unicProduct, caroProducts }) {
+export default function Product({ unicProduct, caroProducts, unicId }) {
   const [product, setProduct] = useState(unicProduct);
-  const [amount, setAmount] = useState(1);
-  const { cart } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const [amount, setAmount] = useState(1);
 
   useEffect(() => {
     setProduct(unicProduct);
   }, [unicProduct]);
 
-  const addProduct = (idProduct) => {
-    const verify = cart.products.find(
-      (product) => product.product._id === idProduct
+  const addProduct = () => {
+    dispatch(
+      addToCart({
+        name: product.name,
+        price: product.price,
+        id: parseInt(unicId),
+        quantity: parseInt(amount),
+        img: product.img,
+      })
     );
-
-    if (verify !== undefined) {
-      const newAmount = parseInt(amount) + parseInt(verify.quantity);
-      post("/api/cart/update", {
-        amount: newAmount,
-        product: idProduct,
-      });
-    } else {
-      dispatch(pushProduct({ product: findProd, amount: amount }));
-      post("/api/cart", {
-        products: idProduct,
-        quantity: amount,
-      });
-    }
   };
 
   return (
@@ -258,9 +250,7 @@ export default function Product({ unicProduct, caroProducts }) {
                     <option value={10}>10</option>
                   </select>
                 </div>
-                <button onClick={() => addProduct(product._id)}>
-                  add to cart
-                </button>
+                <button onClick={addProduct}>add to cart</button>
               </article>
             </Features>
           </Cover>

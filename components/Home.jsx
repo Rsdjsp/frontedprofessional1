@@ -209,7 +209,7 @@ export default function Home() {
       <Cover>
         <Intro>
           <h3>Save 20 % in your Second pruduct whit Your credit card</h3>
-          <Link href="/bestSellers">
+          <Link href="/products/category/bestSellers" passHref>
             <button>shop now</button>
           </Link>
         </Intro>
@@ -220,24 +220,32 @@ export default function Home() {
         <div className="div1">
           <CategoryText>
             <p>Best Sellers</p>
-            <LinkButton>Shop Now</LinkButton>
+            <Link href="/products/category/bestSellers" passHref>
+              <LinkButton>Shop Now</LinkButton>
+            </Link>
           </CategoryText>
           <img src="https://i.imgur.com/hxMs0Cf.png" alt="logo" />
         </div>
         <div className="div2">
           <img src="https://i.imgur.com/6fn1Ogd.png" alt="logo" />
-          <LinkButton>Offers</LinkButton>
+          <Link href="/products/category/offers" passHref>
+            <LinkButton>Offers</LinkButton>
+          </Link>
         </div>
         <div className="div3">
           <CategoryText>
             <p>New Collection</p>
-            <LinkButton>Shop Now</LinkButton>
+            <Link href="/products/category/newCollection" passHref>
+              <LinkButton>Shop Now</LinkButton>
+            </Link>
           </CategoryText>
           <img src="https://i.imgur.com/kr4hj71.png" alt="logo" />
         </div>
         <div className="div4">
           <img src="https://i.imgur.com/zT7Nav1.png" alt="logo" />
-          <LinkButton>Liquidation</LinkButton>
+          <Link href="/products/category/liquidation" passHref>
+            <LinkButton>Liquidation</LinkButton>
+          </Link>
         </div>
       </Categories>
       <Titles>Complement Your Purchase With a Gift Subscription</Titles>

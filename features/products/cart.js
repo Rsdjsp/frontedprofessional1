@@ -4,9 +4,10 @@ import { collection, addDoc, getDocs } from 'firebase/firestore'
 
 export const addToCart = createAsyncThunk("cart/addToCart", async (data, thunkAPI) => {
   const state = thunkAPI.getState()
+  console.log(data);
 
-  if (state.auth.logged) {
-    const col = collection(database, "cart", state.auth.id, "items")
+  if (state.user.logged) {
+    const col = collection(database, "cart", state.user.id, "products")
     const result = await addDoc(col, data)
 
     return data
@@ -16,35 +17,31 @@ export const addToCart = createAsyncThunk("cart/addToCart", async (data, thunkAP
 })
 
 export const recoverCart = createAsyncThunk("cart/recoverCart", async (data, thunkAPI) => {
-  const id = thunkAPI.getState().auth.id
+  const id = thunkAPI.getState().user.id
 
-  const col = collection(database, "cart", id, "items")
+  const col = collection(database, "cart", id, "products")
 
   const snapshot = await getDocs(col)
 
-  let items = []
+  let products = []
 
   snapshot.forEach(doc => {
-    items.push({ id: doc.id, ...doc.data() })
+    products.push({ id: doc.id, ...doc.data() })
   })
 
-  return items
+  return products
 })
 
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
-    items: [],
+    products: [],
     loading: false
   },
   reducers: {
-    // addToCart:(state,action)=>{
-    //     const newProduct = action.payload
-    //     state.items.push(newProduct)
-    // },
-    removeFromCart: (state, action) => {
+      removeFromCart: (state, action) => {
       const id = action.payload
-      state.items = state.items.filter(item => item.id !== id)
+      state.products = state.products.filter(item => item.id !== id)
     }
   },
   extraReducers(builder) {
@@ -53,7 +50,7 @@ const cartSlice = createSlice({
     })
       .addCase(addToCart.fulfilled, (state, action) => {
         state.loading = false
-        state.items.push(action.payload)
+        state.products.push(action.payload)
       })
       .addCase(addToCart.rejected, (state, action) => {
         state.loading = false
@@ -64,7 +61,7 @@ const cartSlice = createSlice({
     })
       .addCase(recoverCart.fulfilled, (state, action) => {
         state.loading = false
-        state.items = action.payload
+        state.products = action.payload
       })
       .addCase(recoverCart.rejected, (state, action) => {
         state.loading = false
